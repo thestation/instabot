@@ -10,6 +10,7 @@ import os
 import time
 import random
 import argparse
+from tqdm import tqdm
 
 sys.path.append(os.path.join(sys.path[0], '../'))
 from instabot import Bot
@@ -17,13 +18,13 @@ from instabot import Bot
 
 def like_and_follow(bot, user_id, nlikes=3):
     bot.like_user(user_id, amount=nlikes)
-    bot.follow(user_id)
+    bot.follow(user_id, nlikes)
     return True
 
 
 def like_and_follow_media_likers(bot, media, nlikes=3):
     for user in tqdm(bot.get_media_likers(media), desc="Media likers"):
-        like_and_follow(bot, user)
+        like_and_follow(bot, user, nlikes)
         time.sleep(10 + 20 * random.random())
     return True
 
@@ -39,4 +40,4 @@ bot = Bot()
 bot.login(username=args.u, password=args.p,
           proxy=args.proxy)
 
-like_and_follow_media_likers(bot, args.media_ia)
+like_and_follow_media_likers(bot, args.media_id)

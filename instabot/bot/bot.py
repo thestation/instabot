@@ -45,6 +45,7 @@ class Bot(API):
                  blacklist=False,
                  dont_follow=False,
                  comments_file=False,
+                 proxy=None,
                  max_likes_per_day=1000,
                  max_unlikes_per_day=1000,
                  max_follows_per_day=350,
@@ -115,6 +116,9 @@ class Bot(API):
         # current following
         self.following = []
 
+        # proxy
+        self.proxy = proxy
+
         # white and blacklists
         self.whitelist = []
         if whitelist:
@@ -148,6 +152,8 @@ class Bot(API):
         self.print_counters()
 
     def login(self, **args):
+        if self.proxy:
+            args['proxy'] = self.proxy
         super(self.__class__, self).login(**args)
         self.prepare()
         signal.signal(signal.SIGTERM, self.logout)
