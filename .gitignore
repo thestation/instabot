@@ -103,4 +103,7 @@ bot_cp_*
 
 # Settings files
 examples/*.txt
+ultimate_schedule/*.txt
 *.checkpoint
+
+
