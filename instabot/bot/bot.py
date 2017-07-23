@@ -7,9 +7,9 @@ from ..api import API
 from .bot_get import get_media_owner, get_your_medias, get_user_medias
 from .bot_get import get_timeline_medias, get_hashtag_medias, get_user_info
 from .bot_get import get_geotag_medias, get_timeline_users, get_hashtag_users
-from .bot_get import get_media_commenters, get_userid_from_username
+from .bot_get import get_media_commenters, get_userid_from_username, get_username_from_userid
 from .bot_get import get_user_followers, get_user_following, get_media_likers
-from .bot_get import get_media_comments, get_geotag_users, convert_to_user_id
+from .bot_get import get_media_comments, get_geotag_users, get_locations_from_coordinates, convert_to_user_id
 from .bot_get import get_comment, get_media_info, get_user_likers
 
 from .bot_like import like, like_medias, like_timeline, like_user, like_users
@@ -23,7 +23,7 @@ from .bot_unfollow import unfollow, unfollow_users, unfollow_non_followers
 from .bot_unfollow import unfollow_everyone
 
 from .bot_comment import comment, comment_medias, comment_geotag, comment_users
-from .bot_comment import comment_hashtag, is_commented
+from .bot_comment import comment_hashtag, is_commented, comment_user
 
 from .bot_block import block, unblock, block_users, unblock_users, block_bots
 
@@ -81,6 +81,15 @@ class Bot(API):
         self.total_blocked = 0
         self.total_unblocked = 0
         self.start_time = datetime.datetime.now()
+
+        # the time.time() of the last action
+        self.last_like = 0
+        self.last_unlike = 0
+        self.last_follow = 0
+        self.last_unfollow = 0
+        self.last_comment = 0
+        self.last_block = 0
+        self.last_unblock = 0
 
         # limits - follow
         self.filter_users = filter_users
@@ -199,14 +208,17 @@ class Bot(API):
     def get_timeline_medias(self):
         return get_timeline_medias(self)
 
-    def get_user_medias(self, user_id, filtration=True):
-        return get_user_medias(self, user_id, filtration)
+    def get_user_medias(self, user_id, filtration=True, is_comment=False):
+        return get_user_medias(self, user_id, filtration, is_comment)
 
     def get_hashtag_medias(self, hashtag, filtration=True):
         return get_hashtag_medias(self, hashtag, filtration)
 
     def get_geotag_medias(self, geotag, filtration=True):
         return get_geotag_medias(self, geotag, filtration)
+
+    def get_locations_from_coordinates(self, latitude, longitude):
+        return get_locations_from_coordinates(self, latitude, longitude)
 
     def get_media_info(self, media_id):
         return get_media_info(self, media_id)
@@ -223,20 +235,23 @@ class Bot(API):
     def get_userid_from_username(self, username):
         return get_userid_from_username(self, username)
 
+    def get_username_from_userid(self, userid):
+        return get_username_from_userid(self, userid)
+
     def get_user_info(self, user_id):
         return get_user_info(self, user_id)
 
-    def get_user_followers(self, user_id, nfollows):
+    def get_user_followers(self, user_id, nfollows=None):
         return get_user_followers(self, user_id, nfollows)
 
-    def get_user_following(self, user_id):
-        return get_user_following(self, user_id)
+    def get_user_following(self, user_id, nfollows=None):
+        return get_user_following(self, user_id, nfollows)
 
     def get_media_likers(self, media_id):
         return get_media_likers(self, media_id)
 
-    def get_media_comments(self, media_id):
-        return get_media_comments(self, media_id)
+    def get_media_comments(self, media_id, only_text=False):
+        return get_media_comments(self, media_id, only_text)
 
     def get_comment(self):
         return get_comment(self)
@@ -301,8 +316,8 @@ class Bot(API):
     def follow_users(self, user_ids):
         return follow_users(self, user_ids)
 
-    def follow_followers(self, user_id):
-        return follow_followers(self, user_id)
+    def follow_followers(self, user_id, nfollows=None):
+        return follow_followers(self, user_id, nfollows)
 
     def follow_following(self, user_id):
         return follow_following(self, user_id)
@@ -332,8 +347,11 @@ class Bot(API):
     def comment_medias(self, medias):
         return comment_medias(self, medias)
 
-    def comment_users(self, user_ids):
-        return comment_users(self, user_ids)
+    def comment_user(self, user_id, amount=None):
+        return comment_user(self, user_id, amount)
+
+    def comment_users(self, user_ids, ncomments=None):
+        return comment_users(self, user_ids, ncomments)
 
     def comment_geotag(self, geotag):
         return comment_geotag(self, geotag)
@@ -360,8 +378,8 @@ class Bot(API):
 
     # filter
 
-    def filter_medias(self, media_items, filtration=True, quiet=False):
-        return filter_medias(self, media_items, filtration, quiet)
+    def filter_medias(self, media_items, filtration=True, quiet=False, is_comment=False):
+        return filter_medias(self, media_items, filtration, quiet, is_comment)
 
     def check_media(self, media):
         return check_media(self, media)
